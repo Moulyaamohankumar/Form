@@ -21,12 +21,15 @@ jobs:
       - name: Install system deps for Puppeteer (safety)
         run: |
           sudo apt-get update
-          sudo apt-get install -y ca-certificates fonts-liberation libatk-bridge2.0-0 libatk1.0-0 libcups2 libdbus-1-3 libgdk-pixbuf2.0-0 libnspr4 libnss3 libx11-xcb1 libxcomposite1 libxdamage1 libxrandr2 xvfb libasound2 libxss1
+          # On Ubuntu 24.04 (noble) some packages are provided under different names;
+          # use libasound2t64 which provides the ALSA libs instead of libasound2.
+          sudo apt-get install -y ca-certificates fonts-liberation libatk-bridge2.0-0 libatk1.0-0 libcups2 libdbus-1-3 libgdk-pixbuf2.0-0 libnspr4 libnss3 libx11-xcb1 libxcomposite1 libxdamage1 libxrandr2 xvfb libasound2t64 libxss1
 
       - name: Install Node dependencies
         run: |
           cd WorkLog_Submission-main
-          npm ci
+          # use npm install which is tolerant if package-lock.json is missing
+          npm install
 
       - name: Run form script (HEADLESS=true)
         env:
