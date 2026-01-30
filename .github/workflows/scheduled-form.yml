@@ -31,9 +31,22 @@ jobs:
           # use npm install which is tolerant if package-lock.json is missing
           npm install
 
-      - name: Run form script (HEADLESS=true)
+      - name: Run form script with screenshot injection
         env:
           HEADLESS: 'true'
         run: |
           cd WorkLog_Submission-main
+          # Create a temporary modified version that adds screenshot before end of try block
+          cp index.js index-original.js
+          sed -i "s/console.log(new Date().toISOString(), 'Form fill finished');/await page.screenshot({ path: 'form-final-state.png', fullPage: true }); console.log(new Date().toISOString(), 'Screenshot captured'); console.log(new Date().toISOString(), 'Form fill finished');/g" index.js
           node index.js
+          # Restore original
+          mv index-original.js index.js
+
+      - name: Upload screenshot artifacts (if exists)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: form-screenshots-${{ github.run_number }}
+          path: WorkLog_Submission-main/*.png
+          if-no-files-found: ignore
